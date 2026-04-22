@@ -5,7 +5,6 @@ const app = express();
 app.use(express.json());
 
 const SMILE_API_KEY = process.env.SMILE_API_KEY;
-const VIP_TIER_ID = "YOUR_VIP_TIER_ID"; // yaha apna dalna
 
 app.post("/webhook", async (req, res) => {
   const order = req.body;
@@ -15,22 +14,9 @@ app.post("/webhook", async (req, res) => {
 
   const tags = customer.tags || "";
 
+  // ✅ VIP check
   if (tags.includes("VIP")) {
 
-    // ✅ 1. VIP Tier Assign
-    await fetch("https://api.smile.io/v1/customers/vip_tier", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${SMILE_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: customer.email,
-        tier_id: VIP_TIER_ID
-      })
-    });
-
-    // ✅ 2. Points bhi de do
     await fetch("https://api.smile.io/v1/customers/points", {
       method: "POST",
       headers: {
@@ -39,11 +25,11 @@ app.post("/webhook", async (req, res) => {
       },
       body: JSON.stringify({
         email: customer.email,
-        points: 100
+        points: 100   // 👈 VIP bonus
       })
     });
 
-    console.log("VIP assign + points mil gaye");
+    console.log("VIP bonus points added");
   }
 
   res.sendStatus(200);
